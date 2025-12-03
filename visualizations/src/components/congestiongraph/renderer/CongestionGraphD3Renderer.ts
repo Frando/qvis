@@ -1078,18 +1078,46 @@ export default class CongestionGraphD3Renderer {
         // Init the lookup table as we'll be retrieving our lists of packets from there
         this.config.connection!.setupLookupTable();
 
-        const packetsSent = this.config.connection!.lookup(qlog.EventCategory.transport, qlog.TransportEventType.packet_sent);
-        const packetsReceived = this.config.connection!.lookup(qlog.EventCategory.transport, qlog.TransportEventType.packet_received);
+        const packetsSent = this.config.connection!.lookup(qlog.EventCategory.transport, qlog.TransportEventType.packet_sent)
+          .filter((p: any) => {
+            if (p.data && p.data.header && p.data.header.path_id !== undefined) {
+              return Number(this.config.pathId) === p.data.header.path_id
+            } else {
+              return true;
+            }
+          });
+        const packetsReceived = this.config.connection!.lookup(qlog.EventCategory.transport, qlog.TransportEventType.packet_received)
+          .filter((p: any) => {
+            if (p.data && p.data.header && p.data.header.path_id !== undefined) {
+              return Number(this.config.pathId) === p.data.header.path_id
+            } else {
+              return true;
+            }
+          });
         let packetsLost = this.config.connection!.lookup(qlog.EventCategory.recovery, qlog.RecoveryEventType.packet_lost);
         if (packetsLost.length === 0) {
           packetsLost= this.config.connection!.lookup(qlog.EventCategory.transport, "packet_lost");
         }
+        packetsLost = packetsLost.filter((p: any) => {
+            if (p.data && p.data.header && p.data.header.path_id !== undefined) {
+              return Number(this.config.pathId) === p.data.header.path_id
+            } else {
+              return true;
+            }
+          });
         let metricUpdates = this.config.connection!.lookup(qlog.EventCategory.recovery, qlog.RecoveryEventType.metrics_updated);
         if (metricUpdates.length === 0) {
           metricUpdates = this.config.connection!.lookup(qlog.EventCategory.transport, "recovery_metrics_updated");
         }
+        metricUpdates = metricUpdates.filter(p => {
+            if ((p as any).data) {
+              return Number(this.config.pathId) === (p as any).data.path_id
+            } else {
+              return true;
+            }
+          });
         const transportParams = this.config.connection!.lookup(qlog.EventCategory.transport, qlog.TransportEventType.parameters_set);
-        console.log({ packetsSent, packetsReceived, packetsLost, metricUpdates, transportParams })
+        console.log({ packetsSent, packetsReceived, packetsLost, metricUpdates, transportParams, config: this.config })
 
         // these are Map<string, Map<string,Packet>>, 
         // where the top-level key is the packet type (initial, handshake, 1RTT, 0RTT) and the other key is the stringified packet number

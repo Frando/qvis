@@ -9,6 +9,10 @@
                 <ConnectionConfigurator v-if="config.connection !== undefined" :allGroups="store.groups" :connection="config.connection" :canBeRemoved="false" :onConnectionSelected="onConnectionSelected" />
             </b-row>
             <b-row align-h="center">
+                Select path
+                <b-input type="number" v-model="config.pathId" />
+            </b-row>
+            <b-row align-h="center">
                 <b-button @click="resetZoom()">Reset zoom</b-button>
                 <b-button @click="useBrushX()" v-b-tooltip.hover title="Click this button, then drag and drop a horizontal time range to zoom in on.">Zoom timerange</b-button>
                 <b-button @click="useBrush2d()" v-b-tooltip.hover title="Click this button, then drag and drop a rectangular area to zoom in on.">Zoom area</b-button>

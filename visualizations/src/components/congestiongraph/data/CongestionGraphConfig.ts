@@ -6,6 +6,7 @@ export default class CongestionGraphConfig {
     // OTHERWISE VUE DOES NOT MAKE THEM REACTIVE
     // !!!!!
 
+    public pathId: Number | undefined = undefined;
     public connection:Connection | undefined = undefined;
     public renderer!: CongestionGraphD3Renderer; // ONLY HERE FOR DEBUGGING, PROPERTY IS NOT INITIALISED ON PURPOSE SO THAT IT IS NOT MADE REACTIVE
 }
