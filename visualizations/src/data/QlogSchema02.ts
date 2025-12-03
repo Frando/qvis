@@ -782,6 +782,11 @@ export enum QUICFrameTypeName {
     max_path_id = "max_path_id",
     paths_blocked = "paths_blocked",
     path_cids_blocked = "path_cids_blocked",
+    
+    // extension: iroh hole punching
+    reach_out = "reach_out",
+    add_address = "add_address",
+    remove_address = "remove_address",
 
     unknown_frame_type = "unknown_frame_type",
 }

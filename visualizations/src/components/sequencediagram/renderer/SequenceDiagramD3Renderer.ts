@@ -1804,6 +1804,9 @@ export class SequenceDiagramD3Renderer {
             this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.observed_address, ["#d6dd02", "#000000"]);
             this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.path_status_available, ["#d6dd02", "#000000"]);
             this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.path_status_backup, ["#d6dd02", "#000000"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.reach_out , ["#d6dd02", "#000000"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.add_address, ["#d6dd02", "#000000"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.remove_address, ["#d6dd02", "#000000"]);
 
             // dark purple (max_* and blocked)
             this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.max_data, ["#5f0984", "#FFFFFF"]);
