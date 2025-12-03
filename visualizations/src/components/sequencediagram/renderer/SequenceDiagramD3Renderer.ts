@@ -1563,7 +1563,7 @@ export class SequenceDiagramD3Renderer {
                         }
 
                         const textSpanFront = document.createElement("span");
-                        textSpanFront.textContent = "" + ( evt.data.header ? this.packetTypeToString(evt.data.header.packet_type) : "" ) + " : " + ( evt.data.header ? evt.data.header.packet_number : "" );
+                        textSpanFront.textContent = this.formatPacketLabel(evt, rawEvt);
                         textSpanFront.style.color = "#383d41"; // dark grey
                         textSpanFront.style.backgroundColor = "#d6d8db"; // light grey
                         textSpanFront.style.paddingLeft = "5px";
@@ -1754,6 +1754,7 @@ export class SequenceDiagramD3Renderer {
         if ( this.frameTypeToColorLUT.size === 0 ){
 
             this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.ack,       ["#03ad25", "#FFFFFF"] ); // green
+            this.frameTypeToColorLUT.set( "path_ack" as any,                ["#03ad25", "#FFFFFF"] ); // green
             this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.stream,    ["#0468cc", "#FFFFFF"] ); // blue
             this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.crypto,    ["#0468cc", "#FFFFFF"] ); // blue
 
@@ -1788,33 +1789,117 @@ export class SequenceDiagramD3Renderer {
         }
     }
 
+    protected formatPacketLabel(evt:IQlogEventParser, rawEvt:any):string {
+        const header = (evt.data as qlog.IEventPacket).header;
+        const packetType = header ? this.packetTypeToString(header.packet_type) : "";
+        const pathAndNumber = this.formatPathAndPacketNumber(header, evt.data, rawEvt);
+
+        if ( packetType && pathAndNumber ) {
+            return `${packetType}: ${pathAndNumber}`;
+        }
+
+        if ( packetType ) {
+            return packetType;
+        }
+
+        if ( pathAndNumber ) {
+            return pathAndNumber;
+        }
+
+        return "";
+    }
+
+    protected formatPathAndPacketNumber(header?:any, data?:any, rawEvt?:any):string {
+        const packetNumber = header && header.packet_number !== undefined ? header.packet_number : undefined;
+        const pathID = this.extractPathId(header, data, rawEvt);
+
+        if ( pathID !== undefined && packetNumber !== undefined ) {
+            return `${pathID}P${packetNumber}`;
+        }
+
+        if ( packetNumber !== undefined ) {
+            return `P${packetNumber}`;
+        }
+
+        if ( pathID !== undefined ) {
+            return `P${pathID}`;
+        }
+
+        return "";
+    }
+
+    protected extractPathId(header?:any, data?:any, rawEvt?:any):string|undefined {
+        const candidates = [
+            data ? data.path : undefined,
+            data ? data.path_id : undefined,
+            header ? (header as any).path : undefined,
+            header ? (header as any).path_id : undefined,
+            data && data.header ? (data.header as any).path : undefined,
+            data && data.header ? (data.header as any).path_id : undefined,
+            rawEvt && rawEvt.qvis ? rawEvt.qvis.path : undefined,
+            rawEvt && rawEvt.qvis && rawEvt.qvis.sequencediagram ? rawEvt.qvis.sequencediagram.path : undefined,
+        ];
+
+        for ( const candidate of candidates ) {
+            if ( candidate !== undefined ) {
+                return "" + candidate;
+            }
+        }
+
+        return undefined;
+    }
+
+    protected formatAckRanges(ranges?:Array<[string, string]>):string {
+        if ( !ranges ) {
+            return "";
+        }
+
+        let output = "";
+        for ( let r = 0; r < ranges.length; ++r  ){
+
+            const range = ranges[r];
+
+            if ( (range as any).length === 1 ) {
+                output += range[0];
+            }
+            else if ( range[0] !== range[1] ){
+                output += range[0] + "-" + range[1];
+            }
+            else{
+                output += range[0];
+            }
+            if ( r < ranges.length - 1 ){
+                output += ",";
+            }
+        }
+
+        return output;
+    }
+
     protected frameToShortString( frame:qlog.QuicFrame ):string {
         let output = "";
         switch ( frame.frame_type ){
             case qlog.QUICFrameTypeName.ack:
                 output = frame.frame_type + " ";
-                if ( frame.acked_ranges ){
-                    const ranges = frame.acked_ranges;
-                    for ( let r = 0; r < ranges.length; ++r  ){
-
-                        const range = ranges[r];
-
-                        if ( (range as any).length === 1 ) {
-                            output += range[0];
-                        }
-                        else if ( range[0] !== range[1] ){
-                            output += range[0] + "-" + range[1];
-                        }
-                        else{
-                            output += range[0];
-                        }
-                        if ( r < ranges.length - 1 ){
-                            output += ","
-                        }
-                    }
-                }
+                output += this.formatAckRanges( frame.acked_ranges );
 
                 return "" + output;
+                break;
+
+            case "path_ack":
+                output = "P_ACK";
+                const pathAckPathID = this.extractPathId(undefined, frame);
+                const pathAckRanges = this.formatAckRanges( (frame as any).acked_ranges );
+
+                if ( pathAckPathID ) {
+                    output += " P" + pathAckPathID;
+                }
+
+                if ( pathAckRanges ) {
+                    output += " " + pathAckRanges;
+                }
+
+                return output;
                 break;
 
             case qlog.QUICFrameTypeName.stream:
@@ -2103,7 +2188,10 @@ export class SequenceDiagramD3Renderer {
                         packetType = this.packetTypeToString( evt.data.header.packet_type ) + " ";
                     }
 
-                    return packetType + "packet lost #" + evt.data.header.packet_number;
+                    const pathAndPacket = this.formatPathAndPacketNumber(evt.data.header, evt.data);
+                    const packetIdentifier = pathAndPacket ? pathAndPacket : ("#" + evt.data.header.packet_number);
+
+                    return packetType + "packet lost " + packetIdentifier;
                 }
                 else {
                     return evt.name;
