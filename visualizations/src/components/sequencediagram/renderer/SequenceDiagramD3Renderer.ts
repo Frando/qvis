@@ -1570,7 +1570,7 @@ export class SequenceDiagramD3Renderer {
 
                         const textSpanFront = document.createElement("span");
                         textSpanFront.innerHTML = ""
-                          + "<strong style='color:#44A'>"
+                          + "<strong>"
                           + (evt.data.header && evt.data.header.path_id !== undefined ? "P" + evt.data.header.path_id + "" : "")
                           + "</strong> "
                           + "<small>"
@@ -1580,6 +1580,8 @@ export class SequenceDiagramD3Renderer {
                         textSpanFront.style.color = "#383d41"; // dark grey
                         textSpanFront.style.backgroundColor = "#d6d8db"; // light grey
                         textSpanFront.style.paddingLeft = "5px";
+                        textSpanFront.style.paddingTop = "2px";
+                        textSpanFront.style.borderRadius = "2px";
                         textSpanFront.style.paddingRight = "5px";
                         textSpanFront.style.border = "1px white";
                         textSpanFront.style.borderStyle = "none solid";
@@ -1659,9 +1661,11 @@ export class SequenceDiagramD3Renderer {
                                     textSpan.style.color = textColor;
                                     textSpan.style.backgroundColor = bgColor;
                                     textSpan.style.paddingLeft = "5px";
+                                    textSpan.style.paddingTop = "2px";
                                     textSpan.style.paddingRight = "5px";
                                     textSpan.style.border = "1px white";
                                     textSpan.style.borderStyle = "none solid";
+                                    textSpan.style.borderRadius = "2px";
                                     textSpan.style.fontSize = "" + ( Math.floor(textHeight * 0.8) ) + "px";
                                     textSpan.onclick = (evt_in) => this.onEventClicked(rawEvt, trace.connection, focusInfo);
                                     if ( directionText === ">" ) {
@@ -1974,6 +1978,34 @@ export class SequenceDiagramD3Renderer {
                 const t = "" + frame.frame_type
                 if (t === "immediate_ack") {
                   return "i_ack";
+                } else if (t === "path_ack") {
+                  output = "p_ack ";
+                  const aframe = frame as any;
+                  if ( aframe.path_id !== undefined) {
+                    output += "p" + aframe.path_id + " ";
+                  }
+                  if ( aframe.acked_ranges ){
+                      const ranges = aframe.acked_ranges;
+                      for ( let r = 0; r < ranges.length; ++r  ){
+  
+                          const range = ranges[r];
+  
+                          if ( (range as any).length === 1 ) {
+                              output += range[0];
+                          }
+                          else if ( range[0] !== range[1] ){
+                              output += range[0] + "-" + range[1];
+                          }
+                          else{
+                              output += range[0];
+                          }
+                          if ( r < ranges.length - 1 ){
+                              output += ","
+                          }
+                      }
+                  }
+  
+                  return "" + output;
                 } else if (t.startsWith("path_")) {
                   return t.replace("path_", "p_")
                 } else {
