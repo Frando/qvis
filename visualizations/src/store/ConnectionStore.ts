@@ -358,6 +358,12 @@ export default class ConnectionStore extends VuexModule {
     }
 
     @Action
+    public loadExamplesForDemoIroh() {
+      this.loadQlogDirectlyFromURL({ url: "standalone_data/iroh/two_relay_only_becomes_direct.client.qlog", filename: "IROH_two_relay_only_becomes_direct.client.qlog" });
+      this.loadQlogDirectlyFromURL({ url: "standalone_data/iroh/two_relay_only_becomes_direct.server.qlog", filename: "IROH_two_relay_only_becomes_direct.server.qlog" });
+    }
+
+    @Action
     public loadQlogDirectlyFromURL( { url, filename } : { url:any, filename:string } ) {
 
         Vue.notify({
