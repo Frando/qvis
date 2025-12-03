@@ -1569,7 +1569,11 @@ export class SequenceDiagramD3Renderer {
                         }
 
                         const textSpanFront = document.createElement("span");
-                        textSpanFront.textContent = "" + ( evt.data.header ? this.packetTypeToString(evt.data.header.packet_type) : "" ) + " : " + ( evt.data.header ? evt.data.header.packet_number : "" );
+                        textSpanFront.textContent = ""
+                          + (evt.data.header && evt.data.header.path_id !== undefined ? "" + evt.data.header.path_id + " : " : "")
+                          + (evt.data.header ? this.packetTypeToString(evt.data.header.packet_type) : "")
+                          + " : "
+                          + (evt.data.header ? evt.data.header.packet_number : "");
                         textSpanFront.style.color = "#383d41"; // dark grey
                         textSpanFront.style.backgroundColor = "#d6d8db"; // light grey
                         textSpanFront.style.paddingLeft = "5px";
