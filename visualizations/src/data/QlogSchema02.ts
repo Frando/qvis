@@ -800,6 +800,7 @@ export interface IPacketHeader {
     path_id?: quint64;
 
     payload_length?: number;
+    length?: number;
 
     // only if present in the header
     // if correctly using NEW_CONNECTION_ID events,
