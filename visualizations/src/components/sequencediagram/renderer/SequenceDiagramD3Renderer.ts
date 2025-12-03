@@ -1569,11 +1569,14 @@ export class SequenceDiagramD3Renderer {
                         }
 
                         const textSpanFront = document.createElement("span");
-                        textSpanFront.textContent = ""
-                          + (evt.data.header && evt.data.header.path_id !== undefined ? "" + evt.data.header.path_id + " : " : "")
+                        textSpanFront.innerHTML = ""
+                          + "<strong style='color:#44A'>"
+                          + (evt.data.header && evt.data.header.path_id !== undefined ? "P" + evt.data.header.path_id + "" : "")
+                          + "</strong> "
+                          + "<small>"
                           + (evt.data.header ? this.packetTypeToString(evt.data.header.packet_type) : "")
-                          + " : "
-                          + (evt.data.header ? evt.data.header.packet_number : "");
+                          + "</small>"
+                          + " <strong>" + (evt.data.header ? evt.data.header.packet_number : "") + "</strong>"
                         textSpanFront.style.color = "#383d41"; // dark grey
                         textSpanFront.style.backgroundColor = "#d6d8db"; // light grey
                         textSpanFront.style.paddingLeft = "5px";
@@ -1610,7 +1613,7 @@ export class SequenceDiagramD3Renderer {
                                     if ( frames.length > 5 ) {
                                         const textSpan = document.createElement("span");
                                         const [bgColor, textColor] = this.frameTypeToColor( frameTypeName );
-                                        textSpan.textContent = frames.length + " " + frameTypeName + " frames (click for details)";
+                                        textSpan.textContent = "" + frames.length + " " + frameTypeName + " frames";
                                         textSpan.style.color = textColor;
                                         textSpan.style.backgroundColor = bgColor;
                                         textSpan.style.paddingLeft = "5px";
@@ -1762,32 +1765,53 @@ export class SequenceDiagramD3Renderer {
     protected frameTypeToColor( frameType:qlog.QUICFrameTypeName ) : Array<string>{
 
         if ( this.frameTypeToColorLUT.size === 0 ){
+            // green (ACK-like)
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.ack, ["#03ad25", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.path_ack, ["#03ad25", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.ack_frequency, ["#03ad25", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.immediate_ack, ["#03ad25", "#FFFFFF"]);
 
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.ack,       ["#03ad25", "#FFFFFF"] ); // green
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.stream,    ["#0468cc", "#FFFFFF"] ); // blue
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.crypto,    ["#0468cc", "#FFFFFF"] ); // blue
+            // blue (stream/crypto)
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.stream, ["#0468cc", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.crypto, ["#0468cc", "#FFFFFF"]);
 
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.padding,   ["#ff69b4", "#FFFFFF"] ); // pink
+            // pink (padding)
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.padding, ["#ff69b4", "#FFFFFF"]);
 
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.connection_close,  ["#a80f3a", "#FFFFFF"] ); // dark red
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.reset_stream,      ["#a80f3a", "#FFFFFF"] ); // dark red
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.application_close, ["#a80f3a", "#FFFFFF"] ); // dark red
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.stop_sending,      ["#a80f3a", "#FFFFFF"] ); // dark red
+            // dark red (closing / stopping)
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.connection_close, ["#a80f3a", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.reset_stream, ["#a80f3a", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.application_close, ["#a80f3a", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.stop_sending, ["#a80f3a", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.path_abandon, ["#a80f3a", "#FFFFFF"]); // abandon implies stop
 
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.new_connection_id,      ["#068484", "#FFFFFF"] ); // dark green
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.retire_connection_id,   ["#068484", "#FFFFFF"] ); // dark green
+            // dark green (connection-id management)
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.new_connection_id, ["#068484", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.retire_connection_id, ["#068484", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.path_new_connection_id, ["#068484", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.path_retire_connection_id, ["#068484", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.new_token, ["#068484", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.handshake_done, ["#068484", "#FFFFFF"]);
 
+            // ugly yellow (ping/challenge/observed/address/status)
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.ping, ["#d6dd02", "#000000"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.path_challenge, ["#d6dd02", "#000000"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.path_response, ["#d6dd02", "#000000"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.observed_address, ["#d6dd02", "#000000"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.path_status_available, ["#d6dd02", "#000000"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.path_status_backup, ["#d6dd02", "#000000"]);
 
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.ping,              ["#d6dd02", "#000000"] ); // ugly yellow
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.path_challenge,    ["#d6dd02", "#000000"] ); // ugly yellow
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.path_response,     ["#d6dd02", "#000000"] ); // ugly yellow
+            // dark purple (max_* and blocked)
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.max_data, ["#5f0984", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.max_stream_data, ["#5f0984", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.max_streams, ["#5f0984", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.data_blocked, ["#5f0984", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.streams_blocked, ["#5f0984", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.stream_data_blocked, ["#5f0984", "#FFFFFF"]);
 
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.max_data,              ["#5f0984", "#FFFFFF"] ); // dark purple
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.max_stream_data,       ["#5f0984", "#FFFFFF"] ); // dark purple
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.max_streams,           ["#5f0984", "#FFFFFF"] ); // dark purple
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.data_blocked,          ["#5f0984", "#FFFFFF"] ); // dark purple
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.streams_blocked,       ["#5f0984", "#FFFFFF"] ); // dark purple
-            this.frameTypeToColorLUT.set( qlog.QUICFrameTypeName.stream_data_blocked,   ["#5f0984", "#FFFFFF"] ); // dark purple
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.max_path_id, ["#5f0984", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.paths_blocked, ["#5f0984", "#FFFFFF"]);
+            this.frameTypeToColorLUT.set(qlog.QUICFrameTypeName.path_cids_blocked, ["#5f0984", "#FFFFFF"]);
         }
 
         if ( this.frameTypeToColorLUT.has( frameType ) ){
@@ -1941,16 +1965,31 @@ export class SequenceDiagramD3Renderer {
                     return "" + qlog.QUICFrameTypeName.stop_sending;
                 }
                 break;
-
+                
+            case qlog.QUICFrameTypeName.new_connection_id:
+              return "new_cid"
+                
             default:
-                return frame.frame_type;
-                break;
+                // TODO: add proper support for these frames
+                const t = "" + frame.frame_type
+                if (t === "immediate_ack") {
+                  return "i_ack";
+                } else if (t.startsWith("path_")) {
+                  return t.replace("path_", "p_")
+                } else {
+                  return frame.frame_type;
+                  break;
+                }
         }
     }
 
     protected eventTypeToColor( evt:IQlogEventParser ) : Array<string> {
 
-        if ( evt.name === qlog.ConnectivityEventType.connection_id_updated ){
+        if (
+          evt.name === qlog.ConnectivityEventType.connection_id_updated ||
+          evt.name === "connection_started" ||
+          evt.name === "tuple_assigned"
+        ){
             return this.frameTypeToColor( qlog.QUICFrameTypeName.new_connection_id );
         }
         else if ( evt.name === qlog.ConnectivityEventType.spin_bit_updated ){
@@ -1967,6 +2006,7 @@ export class SequenceDiagramD3Renderer {
                   evt.name === qlog.TransportEventType.parameters_set ||
                   evt.name === qlog.RecoveryEventType.parameters_set ||
                   evt.name === qlog.HTTP3EventType.parameters_set || 
+                  evt.name === "recovery_metrics_updated" || 
                   evt.name === "loss_timer_updated" ){ // FIXME: properly link to qlog schema once that's been updated
             return this.frameTypeToColor( qlog.QUICFrameTypeName.max_data );
         }
@@ -2113,7 +2153,12 @@ export class SequenceDiagramD3Renderer {
                         packetType = this.packetTypeToString( evt.data.header.packet_type ) + " ";
                     }
 
-                    return packetType + "packet lost #" + evt.data.header.packet_number;
+                    return (
+                      packetType
+                      + "packet lost "
+                      + evt.data.header.path_id !== undefined ? "P" + evt.data.header.path_id : ""
+                      + evt.data.header.packet_number
+                    );
                 }
                 else {
                     return evt.name;
@@ -2232,31 +2277,31 @@ export class SequenceDiagramD3Renderer {
                 break;
         }
     }
-
-    protected packetTypeToString( packetType:string ){
-
-        switch ( packetType ){
-
-            case qlog.PacketType.onertt:
-            case "onertt":
-                return "1RTT";
-                break;
-
-            case qlog.PacketType.zerortt:
-            case "zerortt":
-                return "0RTT";
-                break;
-
-            case qlog.PacketType.version_negotiation:
-                return "VNEG";
-                break;
-
-            default:
-                return packetType;
-                break;
-        }
+    
+    protected packetTypeToString(packetType: string) {
+  
+      switch (packetType) {
+  
+        case qlog.PacketType.onertt:
+        case "onertt":
+          return "1R";
+          break;
+  
+        case qlog.PacketType.zerortt:
+        case "zerortt":
+          return "0RTT";
+          break;
+  
+        case qlog.PacketType.version_negotiation:
+          return "VNEG";
+          break;
+  
+        default:
+          return packetType;
+          break;
+      }
     }
-
 }
+
 
 
