@@ -2076,6 +2076,7 @@ export class SequenceDiagramD3Renderer {
                 return "Spin " + ((evt.data as qlog.IEventSpinBitUpdated).state ? "ON" : "OFF");
                 break;
 
+            case "recovery_metrics_updated":
             case qlog.RecoveryEventType.metrics_updated:
                 const metricNames = Object.keys(evt.data);
 
@@ -2089,7 +2090,7 @@ export class SequenceDiagramD3Renderer {
                     if ( count > 0 ){
                         output += ", ";
                     }
-                    output += "srtt: " + evt.data.smoothed_rtt;
+                    output += "srtt: " + Math.round(evt.data.smoothed_rtt * 1000) / 1000;
                     count += 1;
                 }
                 if ( metricNames.indexOf("bytes_in_flight") >= 0 ) {
@@ -2099,13 +2100,13 @@ export class SequenceDiagramD3Renderer {
                     output += "in flight: " + evt.data.bytes_in_flight;
                     count += 1;
                 }
-                if ( metricNames.indexOf("ssthresh") >= 0 ) {
-                    if ( count > 0 ){
-                        output += ", ";
-                    }
-                    output += "ssthresh: " + evt.data.ssthresh;
-                    count += 1;
-                }
+                // if ( metricNames.indexOf("ssthresh") >= 0 ) {
+                //     if ( count > 0 ){
+                //         output += ", ";
+                //     }
+                //     output += "ssthresh: " + evt.data.ssthresh;
+                //     count += 1;
+                // }
 
                 const amountLeftOver = metricNames.length - count;
                 if ( count > 0 && amountLeftOver > 0 ) {
