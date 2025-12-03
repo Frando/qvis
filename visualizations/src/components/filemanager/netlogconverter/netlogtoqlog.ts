@@ -518,7 +518,7 @@ export default class NetlogToQlog {
                     // Push placeholder qlogEvent into the trace
                     qlogEvent.push(qlogschema.EventCategory.transport);
                     qlogEvent.push(qlogschema.TransportEventType.packet_received);
-                    qlogEvent.push(packet);
+                    qlogEvent.push(packet as unknown as any);
                     connection.qlogEvents.push(qlogEvent);
 
                     // if rxPacket is not undefined, then we have frames buffered
@@ -619,7 +619,7 @@ export default class NetlogToQlog {
                     }
                     qlogEvent.push(qlogschema.EventCategory.recovery);
                     qlogEvent.push(qlogschema.RecoveryEventType.packet_lost);
-                    qlogEvent.push(packet);
+                    qlogEvent.push(packet as unknown as any);
                     connection.qlogEvents.push(qlogEvent);
                     break;
                 }

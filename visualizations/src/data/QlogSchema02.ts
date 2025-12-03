@@ -135,6 +135,7 @@ export interface IRawInfo {
 export enum EventCategory {
     connectivity = "connectivity",
     security = "security",
+    quic = "quic",
     transport = "transport",
     recovery = "recovery",
     http = "http",
@@ -763,6 +764,30 @@ export enum QUICFrameTypeName {
     path_response = "path_response",
     connection_close = "connection_close",
     application_close = "application_close",
+    handshake_done = "handshake_done",
+    
+    // extension: ack frequency
+    ack_frequency = "ack_frequency",
+    immediate_ack = "immediate_ack",
+    // extension: address discovery
+    observed_address = "observed_address",
+    
+    // extension: multipath
+    path_ack = "path_ack",
+    path_abandon = "path_abandon",
+    path_status_available = "path_status_available",
+    path_status_backup = "path_status_backup",
+    path_new_connection_id = "path_new_connection_id",
+    path_retire_connection_id = "path_retire_connection_id",
+    max_path_id = "max_path_id",
+    paths_blocked = "paths_blocked",
+    path_cids_blocked = "path_cids_blocked",
+    
+    // extension: iroh hole punching
+    reach_out = "reach_out",
+    add_address = "add_address",
+    remove_address = "remove_address",
+
     unknown_frame_type = "unknown_frame_type",
 }
 
@@ -770,8 +795,12 @@ export enum QUICFrameTypeName {
 export interface IPacketHeader {
     packet_type: PacketType;
     packet_number: quint64;
-    
+
+    // optional path identifier for multipath
+    path_id?: quint64;
+
     payload_length?: number;
+    length?: number;
 
     // only if present in the header
     // if correctly using NEW_CONNECTION_ID events,

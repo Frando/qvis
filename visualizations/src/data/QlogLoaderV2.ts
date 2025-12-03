@@ -330,10 +330,12 @@ export class DirectEventParser implements IQlogEventParser {
     // OR we just have .category directly
     public get category():string {
         if ( this.currentEvent && this.currentEvent.category ) {
-            return this.currentEvent.category;
+            const category = this.currentEvent.category;
+            return category === qlog02.EventCategory.quic ? qlog02.EventCategory.transport : category;
         }
         else if ( this.currentEvent && this.currentEvent.name ) {
-            return this.currentEvent.name.split(":")[0]; // TODO: OPTIMIZE SOMEHOW?!?
+            const category = this.currentEvent.name.split(":")[0]; // TODO: OPTIMIZE SOMEHOW?!?
+            return category === qlog02.EventCategory.quic ? qlog02.EventCategory.transport : category;
         }
         else {
             return this.categoryCommon;
@@ -393,7 +395,7 @@ export class DirectEventParser implements IQlogEventParser {
 
         if ( trace.commonFields ){
             if ( trace.commonFields.category ) {
-                this.categoryCommon = trace.commonFields.category;
+                this.categoryCommon = trace.commonFields.category === qlog02.EventCategory.quic ? qlog02.EventCategory.transport : trace.commonFields.category;
             }
             if ( trace.commonFields.name ) {
                 this.nameCommon = trace.commonFields.name;
