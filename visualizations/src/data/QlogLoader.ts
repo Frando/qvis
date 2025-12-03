@@ -8,6 +8,7 @@ import QlogConnection from '@/data/Connection';
 import { IQlogEventParser, IQlogRawEvent, TimeTrackingMethod } from '@/data/QlogEventParser';
 
 import { QlogLoaderV2 } from "./QlogLoaderV2";
+import { QlogLoaderV13 } from "./QlogLoaderV13";
 
 export class QlogLoader {
 
@@ -30,11 +31,17 @@ export class QlogLoader {
             else if ( qlog02.Defaults.versionAliases.indexOf(version) >= 0 ) {
                 return QlogLoaderV2.fromJSON( json );
             }
+            else if ( version === "qlog-v13" ){
+                return QlogLoaderV13.fromJSON( json );
+            }
             else {
                 console.error("QlogLoader: Unknown qlog version! Only draft-00, draft-01, draft-02-wip, draft-02 and 0.3 are supported!", version, json);
-                
+
                 return undefined;
             }
+        }
+        else if ( json && json.file_schema === "urn:ietf:params:qlog:file:sequential" ){
+            return QlogLoaderV13.fromJSON( json );
         }
         else {
             console.error("QlogLoader: qlog files MUST have a qlog_version field in their top-level object!", json);

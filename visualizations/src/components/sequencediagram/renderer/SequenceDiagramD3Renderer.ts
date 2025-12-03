@@ -1060,7 +1060,13 @@ export class SequenceDiagramD3Renderer {
                     
                     // need to check for .type as well to deal with different packet number spaces
                     // some packets (like stateless resets) don't have a header or packet_number, so need to check for that
-                    if (candidate.header && evt.header && candidate.header.packet_type === evt.header.packet_type && ("" + candidate.header!.packet_number) === ("" + evt.header!.packet_number) ){
+                    if (
+                      candidate.header
+                        && evt.header
+                        && candidate.header.packet_type === evt.header.packet_type
+                        && ("" + candidate.header!.packet_number) === ("" + evt.header!.packet_number)
+                        && candidate.header.path_id === evt.header.path_id
+                    ) {
                         metadata[metadataTargetProperty] = endEvents[c];
                         lastFoundTargetIndex = c;
                         counterpartFound = true;

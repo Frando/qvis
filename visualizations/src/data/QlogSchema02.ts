@@ -135,6 +135,7 @@ export interface IRawInfo {
 export enum EventCategory {
     connectivity = "connectivity",
     security = "security",
+    quic = "quic",
     transport = "transport",
     recovery = "recovery",
     http = "http",
@@ -770,7 +771,10 @@ export enum QUICFrameTypeName {
 export interface IPacketHeader {
     packet_type: PacketType;
     packet_number: quint64;
-    
+
+    // optional path identifier for multipath
+    path_id?: quint64;
+
     payload_length?: number;
 
     // only if present in the header

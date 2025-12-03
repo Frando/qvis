@@ -11,6 +11,36 @@ export default class StreamingJSONParser {
     // we don't directly use JSON.parse since the qlog string might not be valid JSON in and of itself (e.g., missing closing brackets)
     public static parseQlogText( text:string, streamOnlyAsFallback:boolean = true ):any {
 
+        const recordSeparator = String.fromCharCode(0x1e);
+        if ( text.indexOf(recordSeparator) >= 0 ) {
+            const records = text.split(recordSeparator).map( (entry) => entry.trim() ).filter( (entry) => entry.length > 0 );
+
+            try {
+                const parsedRecords = records.map( (entry) => JSON.parse(entry) );
+
+                if ( parsedRecords.length > 0 && parsedRecords[0].file_schema === "urn:ietf:params:qlog:file:sequential" ) {
+                    const header = parsedRecords[0];
+                    const trace = header.trace || {};
+
+                    trace.events = parsedRecords.slice(1);
+
+                    return {
+                        qlog_version: "qlog-v13",
+                        qlog_format: header.serialization_format || "JSON-SEQ",
+                        file_schema: header.file_schema,
+                        title: header.title,
+                        trace,
+                        traces: [ trace ],
+                    };
+                }
+
+                return parsedRecords;
+            }
+            catch (e) {
+                console.error("StreamingJSONParser:parse : JSON-SEQ parse returned an error, trying again with oboe.js fallback parser! Error was: : ", e);
+            }
+        }
+
         // by default, first tries to use JSON.parse (because it's more performant)
         // Falls back to a streaming parser in case JSON.parse produces errors (e.g., file wasn't closed correctly)
 
